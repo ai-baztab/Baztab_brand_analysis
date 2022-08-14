@@ -29,10 +29,11 @@ class GoogleSearchBrandSts:
             for result in json.loads(response.text)[1]:
                 print(result)
     def region_of_interest(self):
-        country = self.py_trends.interest_by_region(resolution='COUNTRY', inc_low_vol=True, inc_geo_code=False)
+        # country = self.py_trends.interest_by_region(resolution='COUNTRY', inc_low_vol=True, inc_geo_code=False)
         city = self.py_trends.interest_by_region(resolution='CITY', inc_low_vol=True, inc_geo_code=False)
-        region = self.py_trends.interest_by_region(resolution='REGION', inc_low_vol=True, inc_geo_code=False)
-        return country, city, region
+        # region = self.py_trends.interest_by_region(resolution='REGION', inc_low_vol=True, inc_geo_code=False)
+        return city
+
 sample = GoogleSearchBrandSts("عالیس")
 print(sample.rate_of_interest())
 sample.auto_complete('دوغ سنتی')
