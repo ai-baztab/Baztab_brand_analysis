@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 from time import sleep
 from base_scraper import ScrapperSelenium
 from selenium.webdriver.common.by import By
-
+import pandas as pd
 sleep_instagram = 5
 
 
@@ -62,7 +62,19 @@ class InstagramScraper(ScrapperSelenium):
         image_url = self.fetch_element(By.XPATH,'//*[@id="mount_0_0_lJ"]/div/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div/div[1]/img').get_attribute('src')
         urllib.urlretrieve(image_url, f"{id}.png")
     def load_comments(self,id):
+        df = pd.DataFrame(columns=['id, time, comment'])
+        more_comments = self.fetch_element(By.CLASS_NAME, '_ab6-')
+        while more_comments is not None:
+            more_comments.click()
+            more_comments = self.fetch_element(By.CLASS_NAME, '_ab6-')
+        All_comments = self.fetch_element(By.CLASS_NAME, '_a9zr')
+        for comment in All_comments:
 
-
+            date = comment.get_attribute("datetime")
+            account_name = comment.get_attribute("a").text
+            comment = comment.get_attribute("a").text
+            comment_details = {}
+            All_comments.append(comment_details, ignore_index=True)
+        All_comments.to_csv(f'{id}.csv')
 
 
