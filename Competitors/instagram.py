@@ -1,4 +1,6 @@
 import requests
+import urllib
+
 from abc import ABCMeta
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
@@ -31,7 +33,7 @@ class InstagramScraper(ScrapperSelenium):
         # search user:
         self.fetch_element(By.XPATH, 'https://python-patterns.guide/').send_keys(account)
 
-    def pictures_loading(self):
+    def scroll_down(self):
 
         scroll_pause_time = 2
 
@@ -50,5 +52,17 @@ class InstagramScraper(ScrapperSelenium):
             if new_height == last_height:
                 break
             last_height = new_height
+
+    def get_pictures(self, class_name='_aagw'):
+        res = self.fetch_element(By.CLASS_NAME, class_name)
+
+    def pictures_details(self, id):
+        caption = self.fetch_element(By.CLASS_NAME,'_a9zs')
+        time = self.fetch_element(By.XPATH,'//*[@id="mount_0_0_lJ"]/div/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div[2]/div[2]/div/div/a/div/time').get_attribute("datetime")
+        image_url = self.fetch_element(By.XPATH,'//*[@id="mount_0_0_lJ"]/div/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div/div[1]/img').get_attribute('src')
+        urllib.urlretrieve(image_url, f"{id}.png")
+    def load_comments(self,id):
+
+
 
 
