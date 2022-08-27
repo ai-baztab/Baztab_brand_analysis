@@ -20,7 +20,7 @@ class InstagramScraper(ScrapperSelenium):
         if require_login:
             login = False
             while not login:
-                try:
+                # try:
                     self.fetch_element(By.NAME, 'username').clear().send_keys(username)
                     self.fetch_element(By.NAME, 'password').clear().send_keys(password)
                     self.fetch_element(By.XPATH, '//*[@id="loginForm"]/div/div[3]/button/div').click()
@@ -30,8 +30,8 @@ class InstagramScraper(ScrapperSelenium):
                     sleep(sleep_instagram)
                     login = True
 
-                except:
-                    login = False
+                # except:
+                #     login = False
 
     def fetch_everything(self, account):
         # search user:
