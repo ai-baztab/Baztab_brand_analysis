@@ -26,8 +26,9 @@ class ScrapperPure(metaclass=ABCMeta):
         pass
 
 
-class ScrapperSelenium(metaclass=ABCMeta):
-    def __init__(self, driver_path='C:\AI-team-development\chromedriver'):
+class ScrapperSelenium():
+    def __init__(self):
+        driver_path = 'C:\AI-team-development\chromedriver'
         self.DRIVER_PATH = driver_path
         self.options = Options()
         self.options.headless = True

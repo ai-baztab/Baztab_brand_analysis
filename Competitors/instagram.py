@@ -1,7 +1,5 @@
 import requests
 import urllib
-
-from abc import ABCMeta
 from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
@@ -14,25 +12,25 @@ sleep_instagram = 5
 
 
 class InstagramScraper(ScrapperSelenium):
-    def __int__(self, username, password, require_login=False):
-        super(InstagramScraper, self).__init__()
+    def __init__(self, username, password):
+        super().__init__()
         self.driver.get('https://www.instagram.com/')
         sleep(sleep_instagram)
         # login to account:
+        require_login = True
         if require_login:
             self.fetch_element(By.NAME, 'username').send_keys(username)
             self.fetch_element(By.NAME, 'password').send_keys(password)
-            self.driver.find_element_by_css_selector(
-                '#react-root > section > main > div > article > div > div:nth-child(1) > div > form > div:nth-child() > button').click()
+            self.fetch_element(By.XPATH, '//*[@id="loginForm"]/div/div[3]/button/div').click()
             sleep(sleep_instagram)
             # skip save information
-            self.driver.find_element_by_css_selector(
-                'body > div.RnEpo.Yx5HN > div > div > div.mt3GC > button.aOOlW.HoLwm').click()
-            sleep(sleep_instagram)
+            self.fetch_element(By.XPATH, '//*[@id="react-root"]/section/main/div/div/div/div/button').click()
+            sleep(sleep_instagram/2)
 
     def fetch_everything(self, account):
         # search user:
         self.fetch_element(By.XPATH, '//*[@id="mount_0_0_Oh"]/div/div/div/div[1]/div/div/div/div[1]/div[1]/section/nav/div[2]/div/div/div[2]/div[1]/div').send_keys(account)
+        sleep(sleep_instagram)
         self.scroll_down()
         all_media = self.get_pictures()
         page_content = pd.DataFrame(columns=['index', 'caption', 'time', 'tags'])
@@ -99,3 +97,7 @@ class InstagramScraper(ScrapperSelenium):
             comment_details = {}
             all_comments.append(comment_details, ignore_index=True)
         all_comments.to_csv(f'{id}.csv')
+
+
+insta_bot = InstagramScraper('baztabfloor2','fatemesara')
+insta_bot.fetch_everything('alisdrinks')

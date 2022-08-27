@@ -6,28 +6,10 @@ from bs4 import BeautifulSoup
 import time
 
 
-class ScrapperPure(metaclass=ABCMeta):
-    """
-    this class contains only basic method that may be needed for general web scarping
-    """
+class ScrapperSelenium:
 
-    def __init__(self, url=None):
-        self.url = url
-        self.data = None
+    def __init__(self, driver_path='/usr/bin/chromedriver'):
 
-    def make_request(self):
-        return requests.get(self.url)
-
-    def read_in_json(self, response, key):
-        json_file = response.json()
-        self.parse_json(json_file, json_file[key])
-
-    def parse_json(self, file, key):
-        pass
-
-
-class ScrapperSelenium(metaclass=ABCMeta):
-    def __init__(self, driver_path='/usr/bin/chromedriver', ):
         self.DRIVER_PATH = driver_path
         self.options = Options()
         self.options.headless = True
