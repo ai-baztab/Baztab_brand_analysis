@@ -18,13 +18,20 @@ class InstagramScraper(ScrapperSelenium):
         # login to account:
         require_login = True
         if require_login:
-            self.fetch_element(By.NAME, 'username').send_keys(username)
-            self.fetch_element(By.NAME, 'password').send_keys(password)
-            self.fetch_element(By.XPATH, '//*[@id="loginForm"]/div/div[3]/button/div').click()
-            sleep(sleep_instagram)
-            # skip save information
-            self.fetch_element(By.XPATH, '//*[@id="react-root"]/section/main/div/div/div/div/button').click()
-            sleep(sleep_instagram)
+            login = False
+            while not login:
+                try:
+                    self.fetch_element(By.NAME, 'username').clear().send_keys(username)
+                    self.fetch_element(By.NAME, 'password').clear().send_keys(password)
+                    self.fetch_element(By.XPATH, '//*[@id="loginForm"]/div/div[3]/button/div').click()
+                    sleep(sleep_instagram)
+                    # skip save information
+                    self.fetch_element(By.XPATH, '//*[@id="react-root"]/section/main/div/div/div/div/button').click()
+                    sleep(sleep_instagram)
+                    login = True
+
+                except:
+                    login = False
 
     def fetch_everything(self, account):
         # search user:
