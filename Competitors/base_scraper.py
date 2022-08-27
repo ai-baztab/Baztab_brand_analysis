@@ -4,29 +4,13 @@ from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
 
 
-class ScrapperPure(metaclass=ABCMeta):
-    """
-    this class contains only basic method that may be needed for general web scarping
-    """
+class ScrapperSelenium:
 
-    def __init__(self, url=None):
-        self.url = url
-        self.data = None
-
-    def make_request(self):
-        return requests.get(self.url)
-
-    def read_in_json(self, response, key):
-        json_file = response.json()
-        self.parse_json(json_file, json_file[key])
-
-    def parse_json(self, file, key):
-        pass
-
-
-class ScrapperSelenium():
     def __init__(self):
         driver_path = 'C:\AI-team-development\chromedriver'
         self.DRIVER_PATH = driver_path
@@ -34,6 +18,8 @@ class ScrapperSelenium():
         self.options.headless = True
         self.options.add_argument("--window-size=1920,1200")
         self.driver = webdriver.Chrome(options=self.options, executable_path=self.DRIVER_PATH)
+        self.wait = WebDriverWait(self.driver, 30)
+        action = ActionChains(self.driver)
 
     @staticmethod
     def parse_element_tag(web_element, tag):
@@ -42,11 +28,5 @@ class ScrapperSelenium():
         return parser.find_all(tag)
 
     def fetch_element(self, by, string):
-        res = None
-        while res is None:
-            try:
-                res = self.driver.find_element(by, string)
-            except NameError:
-                time.sleep(0.2)
-                print(' ... loading ... ')
+        res = self.wait.until(EC.visibility_of_element_located((by, string)))
         return res

@@ -7,7 +7,6 @@ from time import sleep
 from base_scraper import ScrapperSelenium
 from selenium.webdriver.common.by import By
 import pandas as pd
-
 sleep_instagram = 5
 
 
@@ -25,11 +24,13 @@ class InstagramScraper(ScrapperSelenium):
             sleep(sleep_instagram)
             # skip save information
             self.fetch_element(By.XPATH, '//*[@id="react-root"]/section/main/div/div/div/div/button').click()
-            sleep(sleep_instagram/2)
+            sleep(sleep_instagram)
 
     def fetch_everything(self, account):
         # search user:
-        self.fetch_element(By.XPATH, '//*[@id="mount_0_0_Oh"]/div/div/div/div[1]/div/div/div/div[1]/div[1]/section/nav/div[2]/div/div/div[2]/div[1]/div').send_keys(account)
+        s = self.driver.page_source
+        # txt_field = self.fetch_element(By.XPATH, '//*[@id="mount_0_0_M8"]/div/div/div/div[1]/div/div/div/div[1]/div[1]/section/nav/div[2]/div/div/div[2]/input')
+        # txt_field.send_keys(account).perform()
         sleep(sleep_instagram)
         self.scroll_down()
         all_media = self.get_pictures()
