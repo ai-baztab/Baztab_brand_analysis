@@ -7,38 +7,38 @@ from time import sleep
 from base_scraper import ScrapperSelenium
 from selenium.webdriver.common.by import By
 import pandas as pd
-sleep_instagram = 5
+sleep_instagram = 2.5
 
-
+link = 'https://www.instagram.com/'
 class InstagramScraper(ScrapperSelenium):
-    def __init__(self, username, password):
+    def __init__(self, username, password,require_login = True):
         super().__init__()
-        self.driver.get('https://www.instagram.com/')
+        self.driver.get(link)
         sleep(sleep_instagram)
         # login to account:
-        require_login = True
         if require_login:
-            login = False
             while not login:
-                # try:
-                    self.fetch_element(By.NAME, 'username').clear().send_keys(username)
-                    self.fetch_element(By.NAME, 'password').clear().send_keys(password)
+                try:
+                    self.fetch_element(By.NAME, 'username').send_keys(username)
+                    self.fetch_element(By.NAME, 'password').send_keys(password)
                     self.fetch_element(By.XPATH, '//*[@id="loginForm"]/div/div[3]/button/div').click()
                     sleep(sleep_instagram)
                     # skip save information
-                    self.fetch_element(By.XPATH, '//*[@id="react-root"]/section/main/div/div/div/div/button').click()
+                    self.fetch_element(By.XPATH, '//*[@id="react-root"]/section/main/div/div/div/section/div/button').click()
                     sleep(sleep_instagram)
                     login = True
 
-                # except:
-                #     login = False
+                except:
+                    self.fetch_element(By.NAME, 'username').clear().send_keys(username)
+                    self.fetch_element(By.NAME, 'password').clear().send_keys(password)
 
     def fetch_everything(self, account):
         # search user:
-        s = self.driver.page_source
         # txt_field = self.fetch_element(By.XPATH, '//*[@id="mount_0_0_M8"]/div/div/div/div[1]/div/div/div/div[1]/div[1]/section/nav/div[2]/div/div/div[2]/input')
         # txt_field.send_keys(account).perform()
+        self.driver.get(f'{link}/{account}/')
         sleep(sleep_instagram)
+
         self.scroll_down()
         all_media = self.get_pictures()
         page_content = pd.DataFrame(columns=['index', 'caption', 'time', 'tags'])
@@ -51,25 +51,27 @@ class InstagramScraper(ScrapperSelenium):
         page_content.to_csv(f'{account}.csv')
 
     def scroll_down(self):
+        SCROLL_PAUSE_TIME = 1.5
 
-        scroll_pause_time = 2
         # Get scroll height
         last_height = self.driver.execute_script("return document.body.scrollHeight")
+
         while True:
             # Scroll down to bottom
             self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
 
             # Wait to load page
-            sleep(scroll_pause_time)
+            sleep(SCROLL_PAUSE_TIME)
 
             # Calculate new scroll height and compare with last scroll height
             new_height = self.driver.execute_script("return document.body.scrollHeight")
+
             if new_height == last_height:
                 break
             last_height = new_height
 
     def get_pictures(self, class_name='_aagw'):
-        res = self.fetch_element(By.CLASS_NAME, class_name)
+        res = self.driver.find_elements(By.CLASS_NAME, class_name)
         return res
 
     def pictures_details(self, id):
@@ -107,5 +109,6 @@ class InstagramScraper(ScrapperSelenium):
         all_comments.to_csv(f'{id}.csv')
 
 
-insta_bot = InstagramScraper('baztabfloor2','fatemesara')
+insta_bot = InstagramScraper('baztabhonarai','fatemesara1401',
+                             False)
 insta_bot.fetch_everything('alisdrinks')
