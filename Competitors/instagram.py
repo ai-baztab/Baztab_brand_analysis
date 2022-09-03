@@ -50,24 +50,20 @@ class InstagramScraper(ScrapperSelenium):
             self.fetch_element(By.XPATH, '//div[@class="om3e55n1 b6ax4al1"]/*[name()="svg"][@aria-label="Close"]').click()
         page_content.to_csv(f'{account}.csv')
 
-    def scroll_down(self):
-        SCROLL_PAUSE_TIME = 1.5
-
-        # Get scroll height
-        last_height = self.driver.execute_script("return document.body.scrollHeight")
-
+    def scrolldown(driver):
+        """A method for scrolling the page."""
+        # Get scroll height.
+        last_height = driver.execute_script("return document.body.scrollHeight")
         while True:
-            # Scroll down to bottom
-            self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
-
-            # Wait to load page
-            sleep(SCROLL_PAUSE_TIME)
-
-            # Calculate new scroll height and compare with last scroll height
-            new_height = self.driver.execute_script("return document.body.scrollHeight")
-
+            # Scroll down to the bottom.
+            driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+            # Wait to load the page.
+            sleep(2)
+            # Calculate new scroll height and compare with last scroll height.
+            new_height = driver.execute_script("return document.body.scrollHeight")
             if new_height == last_height:
                 break
+                print("END OF PAGE")
             last_height = new_height
 
     def get_pictures(self, class_name='_aagw'):
