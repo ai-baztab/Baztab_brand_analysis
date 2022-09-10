@@ -48,37 +48,16 @@ class InstagramScraper(ScrapperSelenium):
         self.driver.get(f'{link}/{account}/')
         sleep((sleep_instagram(4))[0])
         self.scrape_down()
-        all_media = self.get_rows()
-        page_content = pd.DataFrame(columns=['index', 'caption', 'time', 'tags'])
-        for i, media in enumerate(all_media):
-            media.click()
-            caption, time, tags = self.pictures_details(i)
-            self.load_comments(i)
-            all_media.append({'index': i, 'caption': caption, 'time': time, 'tags': tags})
-            self.fetch_element(By.XPATH,
-                               '//div[@class="om3e55n1 b6ax4al1"]/*[name()="svg"][@aria-label="Close"]').click()
-        page_content.to_csv(f'{account}.csv')
-
-    def update_media(self, id, **kwargs):
-        for m in self.content:
-            if m == id:
-                return "skip"
-        # m = Media(id, kwargs)
-        return "New"
-
-    def check_elements(self, elements):
-        for e in elements:
-            if 'New' == self.update_media(e.id):
-                # only scrape the rows to add pictures
-                self.content.append(e.id)
-                self.extract_content(e)
-
-    def extract_content(self, element):
-        pics = element.find_elements_by_css_selector(r'div._aabd._aa8k._aanf')
-        for p in pics:
-            pic = p.click()
-            e = Media(p.id, details)
-            self.content.append(e)
+        # all_media = self.get_rows()
+        # page_content = pd.DataFrame(columns=['index', 'caption', 'time', 'tags'])
+        # for i, media in enumerate(all_media):
+        #     media.click()
+        #     caption, time, tags = self.pictures_details(i)
+        #     self.load_comments(i)
+        #     all_media.append({'index': i, 'caption': caption, 'time': time, 'tags': tags})
+        #     self.fetch_element(By.XPATH,
+        #                        '//div[@class="om3e55n1 b6ax4al1"]/*[name()="svg"][@aria-label="Close"]').click()
+        # page_content.to_csv(f'{account}.csv')
 
     def scrape_down(self):
         """A method for scrolling the page."""
@@ -97,11 +76,54 @@ class InstagramScraper(ScrapperSelenium):
                 print("END OF PAGE")
             last_height = new_height
 
+    def update_media(self, id):
+        for m in self.content:
+            if m == id:
+                return "skip"
+        return "New"
+
+    def check_elements(self, elements):
+        for e in elements:
+            if 'New' == self.update_media(e.id):
+                # only scrape the rows to add pictures
+                self.content.append(e.id)
+                self.extract_content(e)
+
+    def extract_content(self, element):
+        pics = element.find_elements_by_css_selector(r'div._aabd._aa8k._aanf')
+        for p in pics:
+            p.click()
+            sleep_instagram(10)
+            try:
+                time = self.driver.find_element_by_css_selector('time._a9ze._a9zf').get_attribute("datetime")
+            except:
+                time = self.driver.find_element_by_css_selector('time._aaqe').get_attribute("datetime")
+            comments = self.driver.find_element_by_css_selector('ul._a9z6._a9za')
+            details = self.scrape_down_comments(comments)
+            e = Media(p.id, details)
+            self.content.append(e)
+
+    def scrape_down_comments(self, comment_blocks):
+        more_btn = comment_blocks.find_element_by_css_selector("svg._ab6-")
+        btn_empty = lambda location: True if location['x'] != 0 else False
+        while btn_empty(more_btn.location):
+            more_btn.click()
+        list_of_comments = comment_blocks.find_elements_by_css_selector("div._a9zo")
+        comments_dict = []
+        for c in list_of_comments:
+            user_id = c.find_element_by_css_selector(
+                "a.qi72231t.nu7423ey.n3hqoq4p.r86q59rh.b3qcqh3k.fq87ekyn.bdao358l.fsf7x5fv.rse6dlih.s5oniofx.m8h3af8h"
+                ".l7ghb35v.kjdc1dyq.kmwttqpk.srn514ro.oxkhqvkx.rl78xhln.nch0832m.cr00lzj9.rn8ck1ys.s3jn8y49.icdlwmnq"
+                "._acan._acao._acat._acaw._a6hd").getText(),
+            comment = c.find_element_by_css_selector("span._aacl._aaco._aacu._aacx._aad7._aade")
+            dt = c.find_element_by_css_selector("time._a9ze._a9zf")
+            comments_dict.append([user_id, comment, dt])
+
     def get_rows(self, class_name1='_ac7v', class_name2='_aang'):
         res = self.driver.find_elements(By.CSS_SELECTOR, r'div._ac7v._aang')
         return res
 
-    def pictures_details(self,el, id):
+    def pictures_details(self, el, id):
         caption = el.find_element_by_css_selector()
         time = self.fetch_element(By.XPATH,
                                   '//*[@id="mount_0_0_lJ"]/div/div/div/div[2]/div/div/div[1]/div/div[3]/div/div/div/div/div[2]/div/article/div/div[2]/div/div/div[2]/div[2]/div/div/a/div/time').get_attribute(

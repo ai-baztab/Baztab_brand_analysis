@@ -15,7 +15,7 @@ class ScrapperSelenium:
         driver_path = 'C:\AI-team-development\chromedriver'
         self.DRIVER_PATH = driver_path
         self.options = Options()
-        self.options.headless = True
+        # self.options.headless = True
         self.options.add_argument("--window-size=1920,1200")
         self.driver = webdriver.Chrome(options=self.options, executable_path=self.DRIVER_PATH)
         self.driver.delete_all_cookies()
