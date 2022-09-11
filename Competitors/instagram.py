@@ -94,13 +94,17 @@ class InstagramScraper(ScrapperSelenium):
         for p in pics:
             p.click()
             sleep_instagram(10)
-            try:
-                time = self.driver.find_element_by_css_selector('time._a9ze._a9zf').get_attribute("datetime")
-            except:
-                time = self.driver.find_element_by_css_selector('time._aaqe').get_attribute("datetime")
+            image_url = self.driver.find_element_by_css_selector('img._aagt').get_attribute("src")
+            if image_url != "":
+                type_media = 0
+            else:
+                image_url = self.driver.find_element_by_css_selector('video._ab1d').get_attribute("src")
+                type_media = 1
+            url = self.driver.current_url.replace('https://www.instagram.com/','')
+            like_view = self.driver.find_element_by_css_selector('div._aacl._aaco._aacw._adda._aacx._aad6._aade').get_attribute("innerHTML")
             comments = self.driver.find_element_by_css_selector('ul._a9z6._a9za')
             details = self.scrape_down_comments(comments)
-            e = Media(p.id, details)
+            e = Media(url, image_url, type_media, details,like_view)
             self.content.append(e)
 
     def scrape_down_comments(self, comment_blocks):
@@ -114,9 +118,9 @@ class InstagramScraper(ScrapperSelenium):
             user_id = c.find_element_by_css_selector(
                 "a.qi72231t.nu7423ey.n3hqoq4p.r86q59rh.b3qcqh3k.fq87ekyn.bdao358l.fsf7x5fv.rse6dlih.s5oniofx.m8h3af8h"
                 ".l7ghb35v.kjdc1dyq.kmwttqpk.srn514ro.oxkhqvkx.rl78xhln.nch0832m.cr00lzj9.rn8ck1ys.s3jn8y49.icdlwmnq"
-                "._acan._acao._acat._acaw._a6hd").getText(),
-            comment = c.find_element_by_css_selector("span._aacl._aaco._aacu._aacx._aad7._aade")
-            dt = c.find_element_by_css_selector("time._a9ze._a9zf")
+                "._acan._acao._acat._acaw._a6hd").text,
+            comment = c.find_element_by_css_selector("span._aacl._aaco._aacu._aacx._aad7._aade").text
+            dt = c.find_element_by_css_selector("time._a9ze._a9zf").get_attribute("datetime")
             comments_dict.append([user_id, comment, dt])
 
     def get_rows(self, class_name1='_ac7v', class_name2='_aang'):
