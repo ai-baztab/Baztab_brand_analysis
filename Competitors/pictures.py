@@ -12,13 +12,19 @@ class Media:
         # add a function to extract tags from caption or the other comment
         # self.tags = tags
         try:
-            self.comments = detail[1, :]
+            self.comments = detail[1:]
         except:
             self.comments = []
-        self.likes_views = like_view
+        self.likes_views = np.int(like_view.replace(',', ''))
         self.id = media_id
 
-    def extract_tags(self):
-        pass
+    def process_comments(self):
+
+        if len(self.comments)!=0:
+            for c in self.comments:
+
+
+    def pic_into_txt(self):
+
 
 

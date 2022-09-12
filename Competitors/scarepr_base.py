@@ -49,3 +49,8 @@ class ScrapperSelenium(metaclass=ABCMeta):
                 time.sleep(0.2)
                 print(' ... loading ... ')
         return res
+
+    @staticmethod
+    def click_on_element(btn):
+        btn.click()
+        time.sleep(4)

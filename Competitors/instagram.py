@@ -95,23 +95,28 @@ class InstagramScraper(ScrapperSelenium):
             p.click()
             sleep_instagram(10)
             image_url = self.driver.find_element_by_css_selector('img._aagt').get_attribute("src")
-            if image_url != "":
+            url = self.driver.current_url.replace('https://www.instagram.com/', '')
+            sleep_instagram(6)
+            like_view = self.driver.find_element_by_css_selector('section._ae5m._ae5n._ae5o').text
+            if 'likes' in like_view:
+                like_view = like_view.replace(' likes', '')
                 type_media = 0
             else:
-                image_url = self.driver.find_element_by_css_selector('video._ab1d').get_attribute("src")
+                like_view = like_view.replace(' views', '')
                 type_media = 1
-            url = self.driver.current_url.replace('https://www.instagram.com/','')
-            like_view = self.driver.find_element_by_css_selector('div._aacl._aaco._aacw._adda._aacx._aad6._aade').get_attribute("innerHTML")
+            sleep_instagram(3)
             comments = self.driver.find_element_by_css_selector('ul._a9z6._a9za')
             details = self.scrape_down_comments(comments)
-            e = Media(url, image_url, type_media, details,like_view)
+            e = Media(url, image_url, type_media, details, like_view)
             self.content.append(e)
+            self.driver.execute_script("window.history.go(-1)")
+            sleep_instagram(8)
 
     def scrape_down_comments(self, comment_blocks):
         more_btn = comment_blocks.find_element_by_css_selector("svg._ab6-")
         btn_empty = lambda location: True if location['x'] != 0 else False
         while btn_empty(more_btn.location):
-            more_btn.click()
+            self.click_on_element(more_btn)
         list_of_comments = comment_blocks.find_elements_by_css_selector("div._a9zo")
         comments_dict = []
         for c in list_of_comments:
@@ -122,6 +127,8 @@ class InstagramScraper(ScrapperSelenium):
             comment = c.find_element_by_css_selector("span._aacl._aaco._aacu._aacx._aad7._aade").text
             dt = c.find_element_by_css_selector("time._a9ze._a9zf").get_attribute("datetime")
             comments_dict.append([user_id, comment, dt])
+        return comments_dict
+
 
     def get_rows(self, class_name1='_ac7v', class_name2='_aang'):
         res = self.driver.find_elements(By.CSS_SELECTOR, r'div._ac7v._aang')
@@ -160,6 +167,17 @@ class InstagramScraper(ScrapperSelenium):
             comment_details = {}
             all_comments.append(comment_details, ignore_index=True)
         all_comments.to_csv(f'{id}.csv')
+
+    def publish_data(self,file_name):
+        pic_detail = pd.DataFrame(columns=['pic_id', 'pic_url', 'number_of_comments', 'like/view', 'caption', 'date'])
+        comment_detail = pd.DataFrame(columns=['pic_id', 'user', ''])
+        for pic in self.contnt:
+            media = pic.pic_into_txt()
+            comments = pic.comment_to_txt()
+            pic_detail.append(media)
+            comment_detail.append(comments)
+        pic_detail.to_csv(f'{file_name}_pics.csv')
+        comment_detail.to_csv(f'{file_name}_comment.csv')
 
 
 insta_bot = InstagramScraper('baztabhonarai', 'fatemesara1401', True)
