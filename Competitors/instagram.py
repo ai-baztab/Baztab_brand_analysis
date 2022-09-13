@@ -126,7 +126,7 @@ class InstagramScraper(ScrapperSelenium):
                 "._acan._acao._acat._acaw._a6hd").text,
             comment = c.find_element_by_css_selector("span._aacl._aaco._aacu._aacx._aad7._aade").text
             dt = c.find_element_by_css_selector("time._a9ze._a9zf").get_attribute("datetime")
-            comments_dict.append([user_id, comment, dt])
+            comments_dict.extend([user_id, comment, dt])
         return comments_dict
 
 
@@ -168,17 +168,20 @@ class InstagramScraper(ScrapperSelenium):
             all_comments.append(comment_details, ignore_index=True)
         all_comments.to_csv(f'{id}.csv')
 
-    def publish_data(self,file_name):
+    def publish_data(self, file_name):
         pic_detail = pd.DataFrame(columns=['pic_id', 'pic_url', 'number_of_comments', 'like/view', 'caption', 'date'])
-        comment_detail = pd.DataFrame(columns=['pic_id', 'user', ''])
+        comment_detail = pd.DataFrame(columns=['pic_id', 'user', 'comment'])
+        tags_details = pd.DataFrame(columns=['pic_id', 'tags'])
         for pic in self.contnt:
-            media = pic.pic_into_txt()
-            comments = pic.comment_to_txt()
-            pic_detail.append(media)
-            comment_detail.append(comments)
+            media_d = pic.pic_into_row()
+            comments_d = pic.comment_to_row()
+            tags_d = pic.tags_into_row
+            pic_detail.append(media_d)
+            comment_detail.append(comments_d)
+            tags_details.append(tags_d)
         pic_detail.to_csv(f'{file_name}_pics.csv')
         comment_detail.to_csv(f'{file_name}_comment.csv')
-
+        tags_details.to_csv(f'{file_name}_tags.cvs')
 
 insta_bot = InstagramScraper('baztabhonarai', 'fatemesara1401', True)
 insta_bot.fetch_everything('alisdrinks')
