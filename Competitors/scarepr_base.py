@@ -5,6 +5,12 @@ from selenium.webdriver.chrome.options import Options
 from bs4 import BeautifulSoup
 import time
 from selenium.webdriver.support.ui import WebDriverWait
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from selenium.common.exceptions import TimeoutException
+
 
 class ScrapperPure(metaclass=ABCMeta):
     """
@@ -40,15 +46,18 @@ class ScrapperSelenium(metaclass=ABCMeta):
         parser = BeautifulSoup(web_element, 'html.parser')
         return parser.find_all(tag)
 
+
+
     def fetch_element(self, by, string):
         res = None
         while res is None:
             try:
                 res = self.driver.find_element(by, string)
             except NameError:
-                time.sleep(0.2)
+                time.sleep(1)
                 print(' ... loading ... ')
         return res
+
 
     @staticmethod
     def click_on_element(btn):
