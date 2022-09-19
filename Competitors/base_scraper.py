@@ -32,3 +32,7 @@ class ScrapperSelenium:
         res = self.wait.until(EC.visibility_of_element_located((by, string)))
         return res
 
+    def fetch_elements(self, by, string):
+        res = self.wait.until(EC.visibility_of_any_elements_located((by, string)))
+        return res
+

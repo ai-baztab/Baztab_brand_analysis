@@ -13,10 +13,11 @@ from pictures import Media
 from functools import reduce
 from operator import mul
 
-sleep_instagram = lambda t: np.random.randint(low=t / 2, high=t * 2, size=1)
+rand = lambda t: np.random.randint(low=t / 2, high=t * 2, size=1)
+sleep_instagram = lambda n : sleep(rand(n)[0])
 
 link = 'https://www.instagram.com/'
-pic_id_t = 0
+
 
 
 def reshape(lst, shape):
@@ -31,33 +32,31 @@ class InstagramScraper(ScrapperSelenium):
         super().__init__()
         self.driver.get(link)
         self.content = []
-        sleep((sleep_instagram(4))[0])
+        sleep_instagram(4)
         login = not require_login
         self.pics = []
+        self.pic_id_t = 0
         # login to account:
         if require_login:
-            while not login:
-                try:
-                    self.fetch_element(By.NAME, 'username').send_keys(username)
-                    self.fetch_element(By.NAME, 'password').send_keys(password)
-                    self.fetch_element(By.XPATH, '//*[@id="loginForm"]/div/div[3]/button/div').click()
-                    sleep((sleep_instagram(4))[0])
-                    # skip save information
-                    self.fetch_element(By.XPATH,
-                                       '//*[@id="react-root"]/section/main/div/div/div/section/div/button').click()
-                    sleep((sleep_instagram(4))[0])
-                    login = True
+            try:
+                self.fetch_element(By.NAME, 'username').send_keys(username)
+                self.fetch_element(By.NAME, 'password').send_keys(password)
+                self.fetch_element(By.XPATH, '//*[@id="loginForm"]/div/div[3]/button/div').click()
+                sleep_instagram(4)
+                # skip save information
+                self.fetch_element(By.XPATH, '//button[text()="Save Info"]').click()
+                sleep_instagram(4)
+                self.fetch_element(By.XPATH, '//button[text()="Not Now"]').click()
 
-                except:
-                    self.fetch_element(By.NAME, 'username').clear().send_keys(username)
-                    self.fetch_element(By.NAME, 'password').clear().send_keys(password)
+            except:
+                print("Exception in Login")
 
     def fetch_everything(self, account):
         # search user:
         # txt_field = self.fetch_element(By.XPATH, '//*[@id="mount_0_0_M8"]/div/div/div/div[1]/div/div/div/div[1]/div[1]/section/nav/div[2]/div/div/div[2]/input')
         # txt_field.send_keys(account).perform()
         self.driver.get(f'{link}/{account}/')
-        sleep((sleep_instagram(4))[0])
+        sleep_instagram(4)
         self.scrape_down(account)
         """
         save the media files as an array in system:
@@ -105,12 +104,14 @@ class InstagramScraper(ScrapperSelenium):
                 self.content.append(e.id)
                 self.extract_content(e, p_id)
 
-    def find_el_inside_el(self, mother, by, string):
+    def find_el_inside_el(self, mother, by, string, penalty = 10):
         res = None
-        while res is None:
+        p = 0
+        while res is None and p < penalty:
             try:
                 res = mother.find_element(by, string)
             except:
+                p += 1
                 time.sleep(1)
                 print(' ... loading ... ')
         return res
@@ -126,7 +127,6 @@ class InstagramScraper(ScrapperSelenium):
         return res
 
     def extract_content(self, element, p_id):
-
         pics = self.find_els_inside_el(element, By.CSS_SELECTOR, r'div._aabd._aa8k._aanf')
         in_time = lambda t1, t2: t2 - t1
         for p in pics:
@@ -143,15 +143,15 @@ class InstagramScraper(ScrapperSelenium):
             else:
                 like_view = like_view.replace(' views', '')
                 type_media = 1
-            sleep_instagram(2)
+            sleep_instagram(5)
             comments = self.fetch_element(By.CSS_SELECTOR, 'ul._a9z6._a9za')
             details = self.scrape_down_comments(comments)
             e = Media(url, image_url, type_media, details, like_view, p_id)
             self.content.append(e)
             self.driver.execute_script("window.history.go(-1)")
             sleep_instagram(4)
-            print(f'picture number : {pic_id_t} and time sepnd to fetch info was: {in_time(st, time.time())}')
-            pic_id_t += 1
+            print(f'picture number : {self.pic_id_t} and time sepnd to fetch info was: {in_time(st, time.time())}')
+            self.pic_id_t += 1
 
     @staticmethod
     def load_more_comments(comment_blocks):
@@ -167,19 +167,27 @@ class InstagramScraper(ScrapperSelenium):
         btn_empty = lambda btn: True if btn is not None else False
         while btn_empty(more_btn):
             sleep_instagram(3)
-            cl = self.find_el_inside_el(more_btn, By.CLASS_NAME, '_abl-')
-            cl.click()
-            sleep_instagram(1)
-            more_btn = self.load_more_comments(comment_blocks)
+            cl = self.find_el_inside_el(more_btn, By.CLASS_NAME, '_abl-',3)
+            if cl is not None:
+                cl.click()
+                sleep_instagram(3)
+                more_btn = self.load_more_comments(comment_blocks)
+            else:
+                more_btn = None
+        sleep(4)
         list_of_comments = comment_blocks.find_elements_by_css_selector("div._a9zo")
         comments_dict = np.reshape([None, None, None] * len(list_of_comments), (len(list_of_comments), 3))
         for i, c in enumerate(list_of_comments):
+            time.sleep(1)
             comments_dict[i, 0] = c.find_element_by_css_selector(
                 "a.qi72231t.nu7423ey.n3hqoq4p.r86q59rh.b3qcqh3k.fq87ekyn.bdao358l.fsf7x5fv.rse6dlih.s5oniofx.m8h3af8h"
                 ".l7ghb35v.kjdc1dyq.kmwttqpk.srn514ro.oxkhqvkx.rl78xhln.nch0832m.cr00lzj9.rn8ck1ys.s3jn8y49.icdlwmnq"
                 "._acan._acao._acat._acaw._a6hd").text,
+
             comments_dict[i, 1] = c.find_element_by_css_selector("span._aacl._aaco._aacu._aacx._aad7._aade").text
+            # print('c t')
             comments_dict[i, 2] = c.find_element_by_css_selector("time._a9ze._a9zf").get_attribute("datetime")
+            # print('c time')
         return comments_dict
 
     def get_rows(self, class_name1='_ac7v', class_name2='_aang'):
@@ -236,6 +244,14 @@ class InstagramScraper(ScrapperSelenium):
         comment_detail.to_csv(f'{file_name}_comment.csv')
         tags_details.to_csv(f'{file_name}_tags.cvs')
 
+    def search(self, tag, prefered = None):
+        self.search_bar = self.fetch_element(By.XPATH, '//input[@type="text"]')
+        self.search_bar.send_keys(tag)
+        sleep_instagram(3)
+        list_of_tags = self.fetch_elements(By.XPATH, '//div[@role="none"]')
+        if prefered is not None:
+            list_of_tags[0].click()
 
 insta_bot = InstagramScraper('baztabhonarai', 'fatemesara1401', True)
-insta_bot.fetch_everything('alisdrinks')
+# insta_bot.fetch_everything('alisdrinks')
+insta_bot.search('#عالیس',1)
